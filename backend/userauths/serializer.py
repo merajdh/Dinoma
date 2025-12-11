@@ -17,14 +17,14 @@ class MyTokenSerializer(TokenObtainPairSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer) : 
     password = serializers.CharField(write_only= True,  required=True,validators=[validate_password] )
-    password2 = serializers.CharField(write_only= True,  required=True)
+    password_repeat = serializers.CharField(write_only= True,  required=True)
     
     class Meta:
         model= User
-        fields = ['full_name' , 'email' ,  'phone' , 'password' , 'password2']
+        fields = ['full_name' , 'email' ,  'phone' , 'password' , 'password_repeat']
     
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
+        if attrs['password'] != attrs['password_repeat']:
             raise serializers.ValidationError({"password" : " Password does not match "})
         return attrs
     def create(self, validated_data):
