@@ -14,7 +14,7 @@ function Login() {
   console.log(password);
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (!isLoggedIn) {
       navigate('/');
     }
   });
@@ -57,7 +57,14 @@ function Login() {
           onChange={e => setPassword(e.target.value)}
         />
 
+        <br />
+        <br />
+
         <button type="submit">Login</button>
+
+        <br />
+
+        <Link to={'/forgot-password'}>Forgot Password</Link>
       </form>
     </div>
   );

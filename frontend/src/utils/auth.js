@@ -18,7 +18,7 @@ export const login = async (email, password) => {
   } catch (error) {
     return {
       data: null,
-      error: error.response || 'Something went wrong ',
+      error: error.response.data || 'Something went wrong ',
     };
   }
 };
@@ -31,7 +31,7 @@ export const register = async (
   password_repeat
 ) => {
   try {
-    const { data, status } = await axios.post('user/register', {
+    const { data, status } = await axios.post('user/register/', {
       full_name,
       email,
       phone,
@@ -67,8 +67,8 @@ export const setUser = async () => {
   }
 
   if (isAccessTokenExpire(accessToken)) {
-    const respones = await getRefreshToken(refreshToken);
-    setAuthUser(respones.access, respones.refresh);
+    const response = await getRefreshToken(refreshToken);
+    setAuthUser(response.access, response.refresh);
   } else {
     setAuthUser(accessToken, refreshToken);
   }

@@ -18,6 +18,8 @@
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.5",
     "simple-zustand-devtools": "^1.1.0",
+    "sweetalert2": "^11.26.11",
+    "tailwind": "^4.0.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

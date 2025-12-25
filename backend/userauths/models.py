@@ -17,9 +17,17 @@ class User(AbstractUser):
     phone = models.CharField(
         verbose_name="شماره تلفن",
         max_length=11,
-        unique=True
+        unique=True,
+        null=True,
+        blank=True
     )
 
+    otp = models.CharField(
+        verbose_name="کد تایید",
+        blank=True,
+        null=True
+        
+    )
     # Authentication settings
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
