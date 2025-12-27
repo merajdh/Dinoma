@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/auth';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../../utils/auth';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import useRandomImage from '../../utils/useRandomImage';
+import InputPassword from '../../components/InputPassword';
+import AuthWrapper from './AuthWrapper';
+import { Loader } from 'lucide-react';
 
 function Register() {
   const [fullName, setFullname] = useState('');
@@ -46,64 +52,50 @@ function Register() {
   };
 
   return (
-    <>
-      <div>Register</div>
-      <br />
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          id="full_name"
-          name="full_name"
-          placeholder="نام و نام خانوادگی"
+    <AuthWrapper>
+      
+      <form onSubmit={handleSubmit} className="space-y-6 min-w-full">
+        <Input
+          type={'text'}
+          value={fullName}
           onChange={e => setFullname(e.target.value)}
+          placeholder={'نام کاربری'}
         />
-        <br />
-        <br />
 
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="ایمیل "
+        <Input
+          type={'email'}
+          value={email}
           onChange={e => setEmail(e.target.value)}
+          placeholder={'ایمیل'}
         />
-        <br />
-        <br />
 
-        <input
-          type="number"
-          id="phone"
-          name="phone"
-          placeholder="شماره تلفن "
-          onChange={e => setPhone(e.target.value)}
-        />
-        <br />
-        <br />
-
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="رمزعبور"
+        <InputPassword
+          value={password}
           onChange={e => setPassword(e.target.value)}
+          placeholder={'رمزعبور'}
         />
-        <br />
-        <br />
-
-        <input
-          type="password"
-          id="password_repeat"
-          name="password_repeat"
-          placeholder="تکرار رمزعبور"
+        <InputPassword
+          value={passwordRepeat}
           onChange={e => setPasswordRepeat(e.target.value)}
+          placeholder={'تکرار رمزعبور'}
         />
-        <br />
-        <br />
 
-        <button type="submit">Register</button>
+        <div className="mb-md"></div>
+
+        <Button type="submit">ورود</Button>
+
+        <div className="text-center mb-xl mt-lg">
+          <Link
+            to="/login"
+            className="text-sm text-black-20 underline underline-offset-6"
+          >
+            <p>
+              حساب کاربری دارید؟ <strong>ورود</strong>
+            </p>
+          </Link>
+        </div>
       </form>
-    </>
+    </AuthWrapper>
   );
 }
 

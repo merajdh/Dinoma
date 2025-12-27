@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../../utils/auth';
 import { useAuthStore } from '../../store/auth';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import InputPassword from '../../components/InputPassword';
+import AuthWrapper from './AuthWrapper';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,35 +42,40 @@ function Login() {
     setIsLoading(false);
   };
   return (
-    <div>
-      <h2>Welcome Back</h2>
-      <p>Login Page</p>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          name="email"
-          id="email"
+    <AuthWrapper>
+      <form onSubmit={handleLogin} className="space-y-6 min-w-full">
+        <Input
+          type={'email'}
           value={email}
           onChange={e => setEmail(e.target.value)}
+          placeholder={'ایمیل'}
         />
-        <input
-          type="password"
-          name="password"
-          id="password"
+        <InputPassword
           value={password}
           onChange={e => setPassword(e.target.value)}
+          placeholder={'رمزعبور'}
         />
 
-        <br />
-        <br />
+        <div className="mb-md"></div>
 
-        <button type="submit">Login</button>
+        <Button type="submit">ورود</Button>
 
-        <br />
-
-        <Link to={'/forgot-password'}>Forgot Password</Link>
+        <div className="flex justify-between mb-xl mt-lg">
+          <Link
+            to="/register"
+            className="text-sm text-black-20 underline underline-offset-6"
+          >
+            ثبت نام
+          </Link>
+          <Link
+            to="/forgot-password"
+            className="text-sm text-black-20 underline underline-offset-6 "
+          >
+            فراموشی رمزعبور
+          </Link>
+        </div>
       </form>
-    </div>
+    </AuthWrapper>
   );
 }
 

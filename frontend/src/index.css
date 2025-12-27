@@ -1,3 +1,109 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@font-face {
+  font-family: 'PeydaWeb';
+  src: url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.eot');
+  src: url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.eot?#iefix')
+      format('embedded-opentype'),
+    url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.woff2')
+      format('woff2'),
+    url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.woff')
+      format('woff');
+}
+
+@font-face {
+  font-family: 'Peyda Bold';
+  src: url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.eot');
+  src: url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.eot?#iefix')
+      format('embedded-opentype'),
+    url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.woff2')
+      format('woff2'),
+    url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.woff')
+      format('woff'),
+    url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.ttf')
+      format('truetype'),
+    url('https://db.onlinewebfonts.com/t/facd0c10f0712e43a8400ef99533f73f.svg#PeydaWeb')
+      format('svg');
+}
+
+@theme {
+  /* status color */
+  --color-success: ##2fb224;
+  --color-error: #cc2929;
+  --color-warning: #f2a60c;
+  --color-info: #1762e5;
+
+  /* primary black */
+  --color-black-90: #000000;
+  --color-black-80: #050505;
+  --color-black-70: #0d0d0d;
+  --color-black-60: #141414;
+  --color-black: #1a1a1a;
+  --color-black-40: #262626;
+  --color-black-30: #333333;
+  --color-black-20: #404040;
+
+  /* natural color */
+  --color-neutral-100: #f0f0f0;
+  --color-neutral-200: #e3e3e3;
+  --color-neutral-400: #bfbfbf;
+  --color-neutral-600: #808080;
+  --color-neutral-800: #3a3a3a;
+
+  /* rounded radius  */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* font size */
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 22px;
+
+  --text-btn: 18px;
+
+  /* Spacing */
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 26px;
+  --spacing-xl: 36px;
+
+  
+  --font-peyda-bold: 'Peyda Bold', 'Arial', sans-serif;
+}
+
+:root {
+  font-family: 'PeydaWeb', 'Arial', sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    line-height: 1.5;
+    font-size: 62.5%;
+  }
+}
+
+@keyframes button-pop {
+  0% {
+    transform: scale(0.98);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.active\:animate-pop:active {
+  animation: button-pop 1s ease-out;
+}
