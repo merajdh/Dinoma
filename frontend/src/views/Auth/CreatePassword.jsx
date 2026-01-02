@@ -2,10 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import apiInstance from '../../utils/axios';
 import Swal from 'sweetalert2';
+import AuthWrapper from './AuthWrapper';
+import InputPassword from '../../components/InputPassword';
+import Button from '../../components/Button';
+import { ToastContainer, toast } from 'react-toastify';
+import { X } from 'lucide-react';
 
 function CreatePassword() {
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordRepeat, setPasswordRepeat] = useState('');
   const [error, setError] = useState(null);
 
   const axios = apiInstance;
@@ -16,18 +21,28 @@ function CreatePassword() {
   const uidb64 = searchParams.get('uidb64');
   const reset_token = searchParams.get('reset_token');
 
+  const options = {
+    onOpen: () => console.log('open'),
+    position: 'top-right',
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    theme: 'light',
+  };
   const handleNewPasswordChange = event => {
     setPassword(event.target.value);
   };
 
   const handleNewPasswordConfirmChange = event => {
-    setConfirmPassword(event.target.value);
+    setPasswordRepeat(event.target.value);
   };
 
   const handlePasswordSubmit = e => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
+    if (password !== passwordRepeat) {
       setError(true);
       console.log('Password Does Not Match');
     } else {
@@ -46,104 +61,63 @@ function CreatePassword() {
       formdata.append('password', password);
 
       try {
-        axios.post(`user/password-change/`, formdata).then(res => {
-          console.log(res.data.code);
-          Swal.fire({
-            icon: 'success',
-            title: 'Password Changed Successfully',
+        axios
+          .post(`user/password-change/`, {
+            otp,
+            uidb64,
+            reset_token,
+            password,
+          })
+          .then(res => {
+            console.log(res.data.code);
+            toast.info('success', options);
+
+            navigate('/login');
+          })
+          .catch(error => {
+            console.log(
+              error.response.data.password[1],
+              error.response.data.password[2],
+              error.response.data.password
+            );
+
+            const passwordErrors = error.response?.data?.password;
+            let msg = '';
+
+            if (Array.isArray(passwordErrors)) {
+              if (passwordErrors.length > 1) {
+                msg = passwordErrors.slice(1).join(' ');
+              } else if (passwordErrors.length === 1) {
+                msg = passwordErrors[0];
+              }
+            } else {
+              msg = error.response?.data?.message || 'Something went wrong';
+            }
+            toast.error(msg, options);
           });
-          navigate('/login');
-        });
       } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'An Error Occured Try Again',
-        });
         // console.log(error);
       }
     }
   };
   return (
     <section>
-      <main className="" style={{ marginBottom: 100, marginTop: 50 }}>
-        <div className="container">
-          {/* Section: Login form */}
-          <section className="">
-            <div className="row d-flex justify-content-center">
-              <div className="col-xl-5 col-md-8">
-                <div className="card rounded-5">
-                  <div className="card-body p-4">
-                    <h3 className="text-center">Create New Password</h3>
-                    <br />
-
-                    <div className="tab-content">
-                      <div
-                        className="tab-pane fade show active"
-                        id="pills-login"
-                        role="tabpanel"
-                        aria-labelledby="tab-login"
-                      >
-                        <form onSubmit={handlePasswordSubmit}>
-                          {/* Email input */}
-                          <div className="form-outline mb-4">
-                            <label className="form-label" htmlFor="Full Name">
-                              Enter New Password
-                            </label>
-                            <input
-                              type="password"
-                              id="email"
-                              required
-                              name="password"
-                              className="form-control"
-                              onChange={handleNewPasswordChange}
-                            />
-                          </div>
-
-                          <div className="form-outline mb-4">
-                            <label className="form-label" htmlFor="Full Name">
-                              Confirm New Password
-                            </label>
-                            <input
-                              type="password"
-                              id="email"
-                              required
-                              name="confirmPassword"
-                              className="form-control"
-                              onChange={handleNewPasswordConfirmChange}
-                            />
-                            {error !== null && (
-                              <>
-                                {error === true ? (
-                                  <p className="text-danger fw-bold mt-2">
-                                    Password Does Not Match
-                                  </p>
-                                ) : (
-                                  <p className="text-success fw-bold mt-2">
-                                    Password Matched
-                                  </p>
-                                )}
-                              </>
-                            )}
-                          </div>
-
-                          <div className="text-center">
-                            <button
-                              type="submit"
-                              className="btn btn-primary w-100"
-                            >
-                              Reset Password
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </main>
+      <AuthWrapper>
+        <form onSubmit={handlePasswordSubmit} className="space-y-6 min-w-full">
+          <InputPassword
+            value={password}
+            onChange={handleNewPasswordChange}
+            placeholder={'رمزعبور جدید'}
+          ></InputPassword>
+          <InputPassword
+            value={passwordRepeat}
+            onChange={handleNewPasswordConfirmChange}
+            placeholder={'تکرار رمزعبور جدید'}
+          ></InputPassword>
+          <Button type="submit">تغییر رمزعبور</Button>
+        </form>
+        <ToastContainer />
+      </AuthWrapper>
     </section>
   );
 }

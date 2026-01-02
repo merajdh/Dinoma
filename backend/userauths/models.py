@@ -23,6 +23,7 @@ class User(AbstractUser):
     )
 
     otp = models.CharField(
+        max_length=7,
         verbose_name="کد تایید",
         blank=True,
         null=True
@@ -30,14 +31,15 @@ class User(AbstractUser):
     )
     # Authentication settings
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS = []
 
     def __str__(self):
         return str(self.email)
 
     def save(self, *args, **kwargs):
         # Auto generate username from email
-        email_username, mobile = self.email.split("@")
+        if self.email and "@" in self.email:
+            email_username = self.email.split("@")[0]
 
         if not self.full_name:
             self.full_name = email_username

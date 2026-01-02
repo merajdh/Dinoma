@@ -11,7 +11,8 @@ function ForgotPassword() {
   const loginImages = ['images/login1.png', 'images/login2.png'];
   const backgroundImg = useRandomImage(loginImages);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async e => {
+    e.preventDefault();
     try {
       await apiInstance.get(`user/password-reset/${email}/`).then(res => {
         alert('یک ایمیل به شما ارسال شد.');
@@ -34,7 +35,7 @@ function ForgotPassword() {
 
         <div className="mb-md"></div>
 
-        <Button type="submit">تغییر رمزعبور</Button>
+        <Button type="submit">ارسال کد بازیابی</Button>
 
         <div className="text-center mb-xl mt-lg">
           <Link
