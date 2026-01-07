@@ -1,28 +1,27 @@
-import { useAuthStore } from '../store/auth';
 import axios from './axios';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
+import { useAuthStore } from '../store/auth';
 
+/* -------------------- LOGIN -------------------- */
 export const login = async (email, password) => {
   try {
-    const { data, status } = await axios.post('user/token/', {
+    const { data } = await axios.post('user/token/', {
       email,
       password,
     });
-    if (status === 200) {
-      setAuthUser(data.access, data.refresh);
 
-      //Alert -  Signed In Successfully
-    }
+    setAuthUser(data.access, data.refresh);
     return { data, error: null };
   } catch (error) {
     return {
       data: null,
-      error: error.response.data || 'Something went wrong ',
+      error: error.response?.data || 'Something went wrong',
     };
   }
 };
 
+/* -------------------- REGISTER -------------------- */
 export const register = async (
   full_name,
   email,
@@ -31,7 +30,7 @@ export const register = async (
   password_repeat
 ) => {
   try {
-    const { data, status } = await axios.post('user/register/', {
+    const { data } = await axios.post('user/register/', {
       full_name,
       email,
       phone,
@@ -41,70 +40,106 @@ export const register = async (
 
     await login(email, password);
     return { data, error: null };
-    // Alert - Signed Up Successfully
   } catch (error) {
     return {
       data: null,
-      error: error.response.data || 'Something went wrong',
+      error: error.response?.data || 'Something went wrong',
     };
   }
 };
 
+/* -------------------- LOGOUT -------------------- */
 export const logout = () => {
   Cookies.remove('access_token');
   Cookies.remove('refresh_token');
-  useAuthStore.getState().setUser(null);
-
-  // Alert - Signed Out Successfully
+  useAuthStore.getState().logout();
 };
 
-export const setUser = async () => {
+/* -------------------- INIT AUTH -------------------- */
+export const initAuth = async () => {
   const accessToken = Cookies.get('access_token');
-  const refreshToken = Cookies.get('access_token');
+  const refreshToken = Cookies.get('refresh_token');
 
-  if (!accessToken || !refreshToken) {
-    return;
-  }
+  if (!accessToken || !refreshToken) return;
 
-  if (isAccessTokenExpire(accessToken)) {
-    const response = await getRefreshToken(refreshToken);
-    setAuthUser(response.access, response.refresh);
+  if (isAccessTokenExpired(accessToken)) {
+    try {
+      const data = await refreshAccessToken();
+      setAuthUser(data.access, data.refresh);
+    } catch {
+      logout();
+    }
   } else {
     setAuthUser(accessToken, refreshToken);
   }
 };
 
-export const setAuthUser = (access_token, refresh_token) => {
-  Cookies.set('access_token', access_token, {
+/* -------------------- SET USER -------------------- */
+export const setAuthUser = (accessToken, refreshToken) => {
+  Cookies.set('access_token', accessToken, {
     expires: 1,
     secure: true,
+    sameSite: 'strict',
   });
-  Cookies.set('refresh_token', refresh_token, {
-    expires: 7,
-    secure: true,
-  });
-  const user = jwtDecode(access_token) ?? null;
 
-  if (user) {
-    useAuthStore.getState().setUser(user);
+  // 🔥 critical: only overwrite refresh if backend sends one
+  if (refreshToken) {
+    Cookies.set('refresh_token', refreshToken, {
+      expires: 7,
+      secure: true,
+      sameSite: 'strict',
+    });
+  }
+
+  const decodedUser = jwtDecode(accessToken);
+  useAuthStore.getState().setUser(decodedUser);
+};
+
+/* -------------------- REFRESH TOKEN -------------------- */
+let isRefreshing = false;
+let refreshQueue = [];
+
+const processQueue = (error, data = null) => {
+  refreshQueue.forEach(promise => {
+    if (error) {
+      promise.reject(error);
+    } else {
+      promise.resolve(data);
+    }
+  });
+  refreshQueue = [];
+};
+
+export const refreshAccessToken = async () => {
+  const refresh = Cookies.get('refresh_token');
+  if (!refresh) throw new Error('No refresh token');
+
+  if (isRefreshing) {
+    return new Promise((resolve, reject) => {
+      refreshQueue.push({ resolve, reject });
+    });
+  }
+
+  isRefreshing = true;
+
+  try {
+    const { data } = await axios.post('user/token/refresh/', { refresh });
+    processQueue(null, data);
+    return data;
+  } catch (error) {
+    processQueue(error, null);
+    throw error;
+  } finally {
+    isRefreshing = false;
   }
 };
 
-export const getRefreshToken = async () => {
-  const refresh_token = Cookies.get('refresh_token');
-  const response = await axios.post('user/token/refresh/', {
-    refresh_token,
-  });
-
-  return response.data;
-};
-
-export const isAccessTokenExpire = accessToken => {
+/* -------------------- TOKEN EXPIRY -------------------- */
+export const isAccessTokenExpired = token => {
   try {
-    const codedToken = jwtDecode(accessToken);
-    return codedToken.exp < Date.now() / 100;
-  } catch (error) {
-    console.log(error);
+    const decoded = jwtDecode(token);
+    return decoded.exp * 1000 < Date.now();
+  } catch {
     return true;
   }
 };

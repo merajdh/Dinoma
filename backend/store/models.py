@@ -1,10 +1,13 @@
 from django.db import models
-from userauths.models import User, Profile
+from userauths.models import User, Profile,user_directory_path
 from django.utils.text import slugify
-
+from django.utils.html import mark_safe
+from django.utils import timezone
 from django.dispatch import receiver    
 from django.db.models.signals import post_save
 from shortuuid.django_fields import ShortUUIDField
+
+import shortuuid
 # Create your models here.
 
 
@@ -55,31 +58,28 @@ class Product (models.Model):
     stock_qty = models.PositiveIntegerField(default=1)
     in_stock = models.BooleanField(default=True)
     status = models.CharField(max_length=100  , choices=STATUS , default="published" )
+    orders = models.PositiveIntegerField(default=0, null=True, blank=True)
+    saved = models.PositiveIntegerField(default=0, null=True, blank=True)
+    special_offer = models.BooleanField(default=False)
     featured = models.BooleanField(default=False)
-    view = models.PositiveIntegerField(default=0)
-    rating = models.PositiveSmallIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0)
+    rating = models.IntegerField(default=0, blank=True , null=True)
     pid = ShortUUIDField(
         unique=True,
         length=10,
         max_length=12,
         alphabet="abcdefgh"
     )
+    sku = ShortUUIDField(
+        unique=True,
+        length=5,
+        max_length=50,
+        alphabet="1234567890",
+        prefix="SKU",
+    )
+    slug = models.SlugField(unique=True ,null=True , blank=True, allow_unicode=True)
+    date = models.DateTimeField(default=timezone.now)
 
-    slug = models.SlugField(unique=True , allow_unicode=True)
-    date = models.DateField(auto_now_add=True)
-    def save(self, *args , **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-
-        self.rating = self.product_rating()
-
-        super(Product , self).save(*args ,**kwargs)
-
-
- 
-    def __str__(self):
-        return self.title
-    
     def product_rating(self):
         product_rating = Review.objects.filter(product=self).aggregate(avg_rating =models.Avg("rating"))
         return product_rating['avg_rating']
@@ -100,25 +100,82 @@ class Product (models.Model):
     
     def size(self):
         return Size.objects.filter(product=self)
+        
+
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name_plural = "Products"
+    def product_image(self):
+        return mark_safe('<img src="%s" width="50" height="50" style="object-fit:cover; border-radius: 6px;" />' % (self.image.url))
+
+    def __str__(self):
+        return self.title
+    
+    def category_count(self):
+        return Product.objects.filter(category__in=self.category).count()
+
+    def get_percentage(self):
+        new_price = ((self.old_price - self.price) / self.old_price) * 100
+        return round(new_price, 0)
+    
+
+    def order_count(self):
+        order_count = CartOrderItem.objects.filter(product=self, order__payment_status="paid").count()
+        return order_count
+
+    def frequently_bought_together(self):
+        frequently_bought_together_products = Product.objects.filter(order_item__order__in=CartOrder.objects.filter(orderitem__product=self)).exclude(id=self.id).annotate(count=models.Count('id')).order_by('-id')[:3]
+        return frequently_bought_together_products
+    
+    def save(self, *args, **kwargs):
+        if self.slug == "" or self.slug is None:
+            uuid_key = shortuuid.uuid()
+            uniqueid = uuid_key[:4]
+            self.slug = slugify(self.title) + "-" + str(uniqueid.lower())
+        
+        if self.stock_qty is not None:
+            if self.stock_qty == 0:
+                self.in_stock = False
+                
+            if self.stock_qty > 0:
+                self.in_stock = True
+        else:
+            self.stock_qty = 0
+            self.in_stock = False
+        
+        super(Product, self).save(*args, **kwargs)
+
+        try:
+            avg = Review.objects.filter(product=self).aggregate(avg_rating=models.Avg("rating"))['avg_rating']
+            avg = avg or 0
+        except Exception:
+            avg = 0
+
+        if self.rating != avg:
+            Product.objects.filter(pk=self.pk).update(rating=avg)
+            self.rating = avg
+
+
 
 class Gallery (models.Model):
     product = models.ForeignKey(Product , on_delete=models.CASCADE)
-    image = models.FileField()
+    image = models.FileField(upload_to=user_directory_path, default="/gallery.jpg")      
     active = models.BooleanField(default=True)
     date = models.DateField(auto_now_add=True)
-    gid = ShortUUIDField(
-        unique=True,
-        length=10,
-        max_length=12,
-        alphabet="abcdefgh"
-    )
+    gid = models.CharField(max_length=20, unique=True, editable=False)
+
+    def save(self, *args, **kwargs):
+        if not self.gid:
+            last = Gallery.objects.order_by('-id').first()
+            last_id = last.id + 1 if last else 1
+            self.gid = f"G-{last_id:04d}"
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.product.title
     
     class Meta:
         verbose_name_plural = 'Product Images'
-
-
 
 class Specification(models.Model):
     product = models.ForeignKey(Product , on_delete=models.CASCADE )
@@ -138,8 +195,10 @@ class Size(models.Model):
 
 class Color(models.Model):
     product = models.ForeignKey(Product , on_delete=models.CASCADE )
+    
     name = models.CharField(max_length=100)
     color_code = models.CharField(max_length=100)
+    color_text = models.CharField(max_length=100 , null=True , blank=True ,default="#ffffff")
 
     def __str__(self):
         return self.name

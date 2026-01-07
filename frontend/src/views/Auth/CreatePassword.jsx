@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import apiInstance from '../../utils/axios';
 import Swal from 'sweetalert2';

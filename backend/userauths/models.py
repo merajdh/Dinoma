@@ -3,11 +3,56 @@ from django.contrib.auth.models import AbstractUser
 from shortuuid.django_fields import ShortUUIDField
 from django.db.models.signals import post_save
 
+from django.contrib.auth.models import UserManager as BaseUserManager
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        # optional username fallback
+        extra_fields.setdefault("username", email.split("@")[0])
+
+        return self.create_user(email, password, **extra_fields)
+
+def user_directory_path(instance, filename):
+
+    user = None
+
+    # Check if instance has a direct user
+    if hasattr(instance, 'user') and instance.user:
+        user = instance.user
+    # Check if instance has a product with a user
+    elif hasattr(instance, 'product') and hasattr(instance.product, 'user') and instance.product.user:
+        user = instance.product.user
+
+    ext = filename.split('.')[-1]  # file extension
+
+    if user:
+        filename = f"{user.id}.{ext}"
+        return f"user_{user.id}/{filename}"
+    else:
+        # fallback path for unknown user
+        filename = f"file.{ext}"
+        return f"user_file/{filename}"
 
 class User(AbstractUser):
     username = models.CharField(
         unique=True,
-        max_length=100
+        max_length=100,
+        null=True,
+        blank=True
     )
     email = models.EmailField(
         verbose_name="آدرس ایمیل",
@@ -29,6 +74,11 @@ class User(AbstractUser):
         null=True
         
     )
+
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    objects = CustomUserManager()
     # Authentication settings
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -91,3 +141,6 @@ def save_user_profile(sender, instance, **kwargs):
 
 post_save.connect(create_user_profile, sender=User)
 post_save.connect(save_user_profile, sender=User)
+
+
+

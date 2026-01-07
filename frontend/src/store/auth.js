@@ -1,20 +1,31 @@
 import { create } from 'zustand';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
 
-const useAuthStore = create((set, get) => ({
+const useAuthStore = create(set => ({
   allUserData: null,
+  user: null,
+  isLoggedIn: false,
   loading: false,
-  user: () => ({
-    user_id: get().allUserData?.user_id || null,
-    username: get().allUserData?.username || null,
-  }),
-  setUser: user => set({ allUserData: user }),
+
+  setUser: user =>
+    set({
+      allUserData: user || null,
+      user: user ? { user_id: user.user_id, username: user.full_name } : null,
+      isLoggedIn: !!user,
+    }),
+
   setLoading: loading => set({ loading }),
-  isLoggedIn: () => get().allUserData !== null,
+
+  logout: () =>
+    set({
+      allUserData: null,
+      user: null,
+      isLoggedIn: false,
+    }),
 }));
 
 if (import.meta.env.DEV) {
-  mountStoreDevtool('Store', useAuthStore);
+  mountStoreDevtool('Auth Store', useAuthStore);
 }
 
 export { useAuthStore };

@@ -22,7 +22,7 @@ function Register() {
   const isLoggedIn = useAuthStore(state => state.isLoggedIn);
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (isLoggedIn) {
       navigate('/');
     }
   });
@@ -53,7 +53,6 @@ function Register() {
 
   return (
     <AuthWrapper>
-      
       <form onSubmit={handleSubmit} className="space-y-6 min-w-full">
         <Input
           type={'text'}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../../utils/auth';
 import { useAuthStore } from '../../store/auth';
@@ -18,7 +18,7 @@ function Login() {
   console.log(password);
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (isLoggedIn) {
       navigate('/');
     }
   });

@@ -50,24 +50,24 @@
   --color-neutral-800: #3a3a3a;
 
   /* rounded radius  */
-  --radius-sm: 8px;
+  --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 16px;
 
   /* font size */
-  --text-sm: 14px;
-  --text-md: 16px;
-  --text-lg: 22px;
+  --text-sm: 12px;
+  --text-md: 14px;
+  --text-lg: 18px;
+  --text-xl: 24px;
 
   --text-btn: 18px;
 
   /* Spacing */
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 26px;
+  --spacing-sm: 6px;
+  --spacing-md: 14px;
+  --spacing-lg: 20px;
   --spacing-xl: 36px;
 
-  
   --font-peyda-bold: 'Peyda Bold', 'Arial', sans-serif;
 }
 
@@ -90,6 +90,10 @@
     line-height: 1.5;
     font-size: 62.5%;
   }
+
+  body {
+    font-size: 1.4rem;
+  }
 }
 
 @keyframes button-pop {
@@ -106,4 +110,13 @@
 
 .active\:animate-pop:active {
   animation: button-pop 1s ease-out;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
