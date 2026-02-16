@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from shortuuid.django_fields import ShortUUIDField
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from django.contrib.auth.models import UserManager as BaseUserManager
 
@@ -27,15 +28,10 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 def user_directory_path(instance, filename):
-
     user = None
 
-    # Check if instance has a direct user
     if hasattr(instance, 'user') and instance.user:
         user = instance.user
-    # Check if instance has a product with a user
-    elif hasattr(instance, 'product') and hasattr(instance.product, 'user') and instance.product.user:
-        user = instance.product.user
 
     ext = filename.split('.')[-1]  # file extension
 
@@ -63,8 +59,7 @@ class User(AbstractUser):
         verbose_name="شماره تلفن",
         max_length=11,
         unique=True,
-        null=True,
-        blank=True
+
     )
 
     otp = models.CharField(
@@ -76,7 +71,7 @@ class User(AbstractUser):
     )
 
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     objects = CustomUserManager()
     # Authentication settings
@@ -120,7 +115,7 @@ class Profile(models.Model):
 
     def __str__(self):
         return str(self.full_name) if self.full_name else str(self.user.full_name)
-
+    
     def save(self, *args, **kwargs):
         if not self.full_name:
             self.full_name = self.user.full_name
@@ -144,3 +139,14 @@ post_save.connect(save_user_profile, sender=User)
 
 
 
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        # Only create if not exists
+        Profile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    # Save profile if exists
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

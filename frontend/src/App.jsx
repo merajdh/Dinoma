@@ -14,9 +14,17 @@ import SpecialOffer from './views/Store/SpecialOffer';
 import PrivateRoute from './layout/PrivateRoute';
 import { MainLayout } from './layout/MainLayout';
 import { AuthLayout } from './layout/AuthLayout';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { initAuth } from './utils/auth';
 import ProductDetail from './views/Store/ProductDetail';
+import CartView from './views/Store/CartView';
+import apiInstance from './utils/axios';
+import CartId from './views/plugin/CartId';
+import UserData from './views/plugin/UserData';
+import { CartContext } from './views/plugin/Context';
+import RegisterOTP from './views/Auth/RegisterOTP';
+import ProductList from './views/Store/ClothingTypeList';
+import ClothingTypeList from './views/Store/ClothingTypeList';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +44,16 @@ const router = createBrowserRouter([
         path: 'products/:slug',
         element: <ProductDetail />,
         handle: { name: 'محصول' },
+      },
+      {
+        path: 'clothing-type/:id',
+        element: <ClothingTypeList />,
+        handle: { name: 'محصولات' },
+      },
+      {
+        path: 'cart',
+        element: <CartView />,
+        handle: { name: 'سبد خرید' },
       },
     ],
   },
@@ -61,6 +79,11 @@ const router = createBrowserRouter([
         element: <CreatePassword />,
         handle: { name: 'ساخت رمز عبور' },
       },
+      {
+        path: 'verify-otp',
+        element: <RegisterOTP />,
+        handle: { name: 'کد تایید' },
+      },
     ],
   },
 ]);
@@ -69,7 +92,26 @@ function App() {
   useEffect(() => {
     initAuth();
   }, []);
-  return <RouterProvider router={router} />;
+
+  const [cartCount, setCartCount] = useState();
+  const userData = UserData();
+  let cart_id = CartId();
+  const axios = apiInstance;
+
+  useEffect(() => {
+    const url = userData?.user_id
+      ? `cart-list/${cart_id}/${userData?.user_id}/`
+      : `cart-list/${cart_id}/`;
+    axios.get(url).then(res => {
+      setCartCount(res.data.length);
+    });
+  }, []);
+
+  return (
+    <CartContext.Provider value={[cartCount, setCartCount]}>
+      <RouterProvider router={router} />
+    </CartContext.Provider>
+  );
 }
 
 export default App;

@@ -68,11 +68,11 @@
   --spacing-lg: 20px;
   --spacing-xl: 36px;
 
-  --font-peyda-bold: 'Peyda Bold', 'Arial', sans-serif;
+  --font-peyda-bold: 'Peyda Bold', sans-serif;
 }
 
 :root {
-  font-family: 'PeydaWeb', 'Arial', sans-serif;
+  font-family: 'PeydaWeb', sans-serif;
 }
 
 @layer base {
@@ -94,6 +94,20 @@
   body {
     font-size: 1.4rem;
   }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* Internet Explorer and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  button {
+    cursor: pointer;
+    word-spacing: 1.3px !important;
+  }
 }
 
 @keyframes button-pop {
@@ -108,6 +122,18 @@
   }
 }
 
+@layer utilities {
+  .no-spinner {
+    /* Chrome, Safari, Edge */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      @apply appearance-none m-0;
+    }
+
+    /* Firefox */
+    -moz-appearance: textfield;
+  }
+}
 .active\:animate-pop:active {
   animation: button-pop 1s ease-out;
 }
@@ -119,4 +145,25 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+.form-outline {
+  border: solid 1px var(--color-neutral-600);
+  border-radius: var(--spacing-sm);
+  min-width: 22rem;
+  height: 3.5rem;
+  padding: 0.5rem;
+}
+
+.form-input {
+  align-items: center;
+  display: flex;
+  row-gap: 0px;
+  column-gap: var(--spacing-sm);
+  align-content: center;
+}
+
+.form-label {
+  min-width: 120px !important;
+  font-size: var(--text-sm);
 }

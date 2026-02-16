@@ -6,7 +6,16 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import InputPassword from '../../components/InputPassword';
 import AuthWrapper from './AuthWrapper';
+import { toast, ToastContainer } from 'react-toastify';
+import { ToastOptions } from '../../utils/toastOption';
 function Login() {
+  const validateUserInfo = () => {
+    if (!email.trim()) return 'ایمیل الزامی است';
+    if (!/^\S+@\S+\.\S+$/.test(email)) return 'ایمیل معتبر نیست';
+    if (!password.trim()) return 'رمزعبور الزامی است';
+
+    return null;
+  };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,16 +39,24 @@ function Login() {
 
   const handleLogin = async e => {
     e.preventDefault();
-    setIsLoading(true);
+    const error = validateUserInfo();
 
-    const { error } = await login(email, password);
     if (error) {
-      alert(error);
-    } else {
-      navigate('/');
-      resetForm();
+      toast.warning(error, ToastOptions);
+      return;
     }
-    setIsLoading(false);
+    if ((email, password)) {
+      setIsLoading(true);
+
+      const { error } = await login(email, password);
+      if (error) {
+        toast.error(error.detail, ToastOptions);
+      } else {
+        navigate('/');
+        resetForm();
+      }
+      setIsLoading(false);
+    }
   };
   return (
     <AuthWrapper>
@@ -58,7 +75,9 @@ function Login() {
 
         <div className="mb-md"></div>
 
-        <Button type="submit">ورود</Button>
+        <Button disabled={isLoading} type="submit">
+          {isLoading ? 'در حال بررسی...' : 'ورود'}
+        </Button>
 
         <div className="flex justify-between mb-xl mt-lg">
           <Link

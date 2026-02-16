@@ -1,25 +1,30 @@
 import React, { useState } from 'react';
 import useRandomImage from '../../utils/useRandomImage';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 function AuthWrapper({ children }) {
   const loginImages = ['images/login1.png', 'images/login2.png'];
   const backgroundImg = useRandomImage(loginImages);
 
   const [loaded, setLoaded] = useState(false);
+  const navigate = useNavigate();
   const handleLoad = () => {
     setLoaded(true);
   };
   return (
     <div className="relative min-h-screen  flex flex-col md:flex-row ">
+      <ToastContainer></ToastContainer>
       <div className=" m-auto w-full md:w-1/2 flex  min-h-fit z-999 md:h-screen justify-center  bg-white px-md  md:px-sm md:shadow-neutral-600  shadow-2xl ">
         <div className="w-full min-w-md  m-auto md:px-[10%]">
           <Link
             to="/"
             className=" left-md md:px-sm text-neutral-600 underline underline-offset-3 mx-auto"
+          ></Link>
+          <h2
+            onClick={() => navigate('/')}
+            className="text-xl font-peyda-bold text-center font-black  text-black mb-lg mt-xl cursor-pointer "
           >
-          </Link>
-          <h2 className="text-3xl font-peyda-bold text-center font-black  text-black mb-lg mt-xl">
             دینوما
           </h2>
           {children}

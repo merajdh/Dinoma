@@ -29,14 +29,96 @@ from userauths.serializer import MyTokenSerializer,RegisterSerializer , UserSeri
 class MyTokenObtainView(TokenObtainPairView):
     serializer_class  = MyTokenSerializer
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    permission_classes = (AllowAny,)
+class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
 
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
 
-def generate_numeric_otp(length=7):
+        # Check for existing users
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            if user.is_active:
+                # Active user exists → cannot register
+                return Response({"error": "این ایمیل قبلا ثبت شده است"}, status=400)
+            else:
+                # Inactive user exists → overwrite password + other fields
+                user.set_password(request.data["password"])
+                user.full_name = request.data.get("full_name", user.full_name)
+                user.phone = request.data.get("phone", user.phone)
+                user.save(update_fields=['password', 'full_name', 'phone'])
+        else:
+            # No user → create new
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save(is_active=False)
+
+        # Send OTP
+        send_otp(user)
+
+        return Response({"message": "کد تایید برای شما ارسال شد", "email": user.email}, status=201)
+def generate_numeric_otp(length=6):
     return ''.join(str(random.randint(0, 9)) for _ in range(length))
+
+def send_otp(user):
+    user.otp = generate_numeric_otp()
+    user.save(update_fields=["otp"])
+
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    token = PasswordResetTokenGenerator().make_token(user)
+
+    params = {
+        "otp": user.otp,
+        "uidb64": uidb64,
+        "reset_token": token,
+    }
+
+    link = f"https://merajdh.pythonanywhere.com/verify-otp?{urlencode(params)}"
+
+    context = {
+        "username": user.username,
+        "otp": user.otp,
+        "link": link,
+    }
+
+    subject = "تایید حساب کاربری"
+    text_body = render_to_string("email/otp_email.txt", context)
+
+         
+    html_content = render_to_string("email/otp_email.html", context)
+
+            
+
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[user.email],
+        body=text_body,
+    )
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+class VerifyOTPView(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        email = request.data.get("email")
+        otp = request.data.get("otp")
+
+        try:
+            user = User.objects.get(email=email, otp=otp)
+        except User.DoesNotExist:
+            return Response({"message": "Invalid OTP"}, status=400)
+
+        user.is_active = True
+        user.otp = None
+        user.save()
+
+        return Response({"message": "Account verified successfully"}, status=200)
+    
+    
 class PasswordEmailVerify(generics.RetrieveAPIView):
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
@@ -64,7 +146,7 @@ class PasswordEmailVerify(generics.RetrieveAPIView):
                 "reset_token": reset_token
             }
 
-            link = f"http://localhost:5173/create-new-password?{urlencode(params)}"       
+            link = f"https://merajdh.pythonanywhere.com/create-new-password?{urlencode(params)}"       
             merge_data = {
                 'link': link, 
                 'username': user.username, 

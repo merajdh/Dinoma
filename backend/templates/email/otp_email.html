@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Verification</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background: #f4f6f8;
+      font-family: Tahoma, Arial, sans-serif;
+    "
+  >
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding: 40px 10px">
+          <table
+            width="100%"
+            max-width="480"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              background: #ffffff;
+              border-radius: 12px;
+              padding: 32px;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td align="center" style="padding-bottom: 20px">
+                <h2 style="margin: 0; color: #151718">تایید هویت</h2>
+                <p style="margin: 8px 0 0; color: #848484; font-size: 14px">
+                  کد تایید شما
+                </p>
+              </td>
+            </tr>
+
+            <!-- OTP Box -->
+            <tr>
+              <td align="center" style="padding: 20px 0">
+                <div
+                  style="
+                    font-size: 32px;
+                    letter-spacing: 8px;
+                    font-weight: bold;
+                    background: #f9f9f9;
+                    border-radius: 10px;
+                    padding: 16px 24px;
+                    color: #1a1a1a;
+                    display: inline-block;
+                  "
+                >
+                  {{ otp }}
+                </div>
+              </td>
+            </tr>
+
+            <!-- Message -->
+            <tr>
+              <td align="center" style="padding: 10px 0">
+                <p
+                  style="
+                    margin: 0;
+                    color: #303031;
+                    font-size: 14px;
+                    line-height: 1.8;
+                  "
+                >
+                  سلام {{ username }} 👋
+                  <br />
+                  این کد فقط برای شما معتبر است و تا چند دقیقه دیگر منقضی
+                  می‌شود.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Button -->
+            <tr>
+              <td align="center" style="padding: 24px 0">
+                <a
+                  href="{{ link }}"
+                  style="
+                    background: #1a1a1a;
+                    color: #ffffff;
+                    padding: 12px 28px;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    display: inline-block;
+                  "
+                >
+                  تایید حساب
+                </a>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="padding-top: 20px">
+                <p style="margin: 0; color: #b0b0b0; font-size: 12px">
+                  اگر این درخواست توسط شما ارسال نشده است، این ایمیل را نادیده
+                  بگیرید.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -3,26 +3,53 @@ import Button from '../../components/Button';
 import apiInstance from '../../utils/axios';
 import Input from '../../components/Input';
 import { Link } from 'react-router-dom';
-import useRandomImage from '../../utils/useRandomImage';
 import AuthWrapper from './AuthWrapper';
+import { toast } from 'react-toastify';
+import { ToastOptions } from '../../utils/toastOption';
 function ForgotPassword() {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const loginImages = ['images/login1.png', 'images/login2.png'];
-  const backgroundImg = useRandomImage(loginImages);
+  const validateUserInfo = () => {
+    if (!email.trim()) return 'ایمیل الزامی است';
+    if (!/^\S+@\S+\.\S+$/.test(email)) return 'ایمیل معتبر نیست';
 
+    return null;
+  };
   const handleSubmit = async e => {
     e.preventDefault();
-    try {
-      await apiInstance.get(`user/password-reset/${email}/`).then(res => {
-        alert('یک ایمیل به شما ارسال شد.');
-      });
-    } catch (error) {
-      alert('کاربری با این ایمیل وجود ندارد');
+    const error = validateUserInfo();
 
-      console.log('ERROR === ', error);
+    if (error) {
+      toast.warning(error, ToastOptions);
+      return;
+    }
+    if (email) {
+      setIsLoading(true);
+      await apiInstance
+        .get(`user/password-reset/${email}/`)
+        .then(res => {
+          console.log(res);
+
+          toast.success(
+            'لینک بازیابی رمزعبور به ایمیل شما ارسال شد',
+            ToastOptions
+          );
+        })
+        .catch(error => {
+          console.log(error);
+
+          toast.error(
+            error.response.data.detail || 'مشکلی رخ داده است',
+            ToastOptions
+          );
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   };
+
   return (
     <AuthWrapper>
       <form onSubmit={handleSubmit} className="space-y-6 min-w-full">
@@ -30,12 +57,14 @@ function ForgotPassword() {
           type={'email'}
           value={email}
           onChange={e => setEmail(e.target.value)}
-          placeholder={'نام ایمیل'}
+          placeholder={'ایمیل'}
         />
 
         <div className="mb-md"></div>
 
-        <Button type="submit">ارسال کد بازیابی</Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? 'در حال بررسی...' : 'ارسال کد بازیابی'}
+        </Button>
 
         <div className="text-center mb-xl mt-lg">
           <Link

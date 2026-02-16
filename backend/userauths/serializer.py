@@ -17,32 +17,60 @@ class MyTokenSerializer(TokenObtainPairSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password_repeat = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password_repeat = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = ['full_name', 'email', 'phone', 'password', 'password_repeat']
+        extra_kwargs = {
+            "phone": {"validators": []},  
+            "email": {"validators": []},  
+        }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_repeat']:
-            raise serializers.ValidationError({"password": "Passwords do not match"})
+            raise serializers.ValidationError({
+                "password": "رمزعبور شما با هم هماهنگ نیستند"
+            })
+
+        email = attrs.get("email")
+        phone = attrs.get("phone")
+
+        if User.objects.filter(email=email, is_active=True).exists():
+            raise serializers.ValidationError({
+                "email": "این ایمیل قبلاً فعال شده است"
+            })
+
+        if phone and User.objects.filter(phone=phone, is_active=True).exists():
+            raise serializers.ValidationError({
+                "phone": "این شماره تلفن قبلاً فعال شده است"
+            })
+
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('password_repeat')
+        validated_data.pop("password_repeat")
+        email = validated_data["email"]
+        phone = validated_data.get("phone")
 
-        email_username = validated_data['email'].split('@')[0]
+        user = User.objects.filter(email=email, is_active=False).first()
 
-        user = User.objects.create_user(
-            username=email_username,
-            email=validated_data['email'],
-            phone=validated_data.get('phone'),
-            full_name=validated_data.get('full_name'),
-            password=validated_data['password']
+        if user:
+            user.set_password(validated_data["password"])
+            user.full_name = validated_data.get("full_name")
+            user.phone = phone
+            user.save()
+            return user
+
+        return User.objects.create_user(
+            username=email.split("@")[0],
+            email=email,
+            phone=phone,
+            full_name=validated_data.get("full_name"),
+            password=validated_data["password"],
+            is_active=False
         )
-        return user
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

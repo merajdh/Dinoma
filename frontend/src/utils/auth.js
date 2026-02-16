@@ -1,12 +1,12 @@
-import axios from './axios';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 import { useAuthStore } from '../store/auth';
+import apiInstance from './axios';
 
 /* -------------------- LOGIN -------------------- */
 export const login = async (email, password) => {
   try {
-    const { data } = await axios.post('user/token/', {
+    const { data } = await apiInstance.post('user/token/', {
       email,
       password,
     });
@@ -30,7 +30,7 @@ export const register = async (
   password_repeat
 ) => {
   try {
-    const { data } = await axios.post('user/register/', {
+    const { data } = await apiInstance.post('user/register/', {
       full_name,
       email,
       phone,
@@ -123,7 +123,7 @@ export const refreshAccessToken = async () => {
   isRefreshing = true;
 
   try {
-    const { data } = await axios.post('user/token/refresh/', { refresh });
+    const { data } = await apiInstance.post('user/token/refresh/', { refresh });
     processQueue(null, data);
     return data;
   } catch (error) {

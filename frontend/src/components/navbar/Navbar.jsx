@@ -1,20 +1,26 @@
 import { LineChart, MenuIcon, SearchIcon, ShoppingCart, X } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router';
+import React, { useState, useEffect, useContext } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router';
 
 import Search from './search';
 import Breadcrumb from './Breadcrumb';
 import { useAuthStore } from '../../store/auth';
+import { CartContext } from '../../views/plugin/Context';
+import Logout from '../../views/Auth/Logout';
+import { logout } from '../../utils/auth';
 
 const Navbar = () => {
   const isLoggedIn = useAuthStore(state => state.isLoggedIn);
   const user = useAuthStore(state => state.user);
+  const cartCount = useContext(CartContext);
 
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const cartCount = 2;
-
+  const navigate = useNavigate();
+  const navigateToCart = () => {
+    navigate('cart');
+  };
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -41,9 +47,12 @@ const Navbar = () => {
           </div>
 
           <div className=" bg-neutral-200   text-black-20 w-35 text-center place-content-center text-sm">
-            <Link className="flex flex-row justify-center" to="cart">
+            <Link
+              className="flex flex-row justify-center items-center"
+              to="cart"
+            >
               {cartCount && (
-                <div className=" w-4 h-4 ml-1 bg-amber-200 ">
+                <div className=" w-6 h-6  top-1 place-items-center ml-1 rounded-sm bg-neutral-600/50">
                   <span className="  text-black-20  text-[8px] text-center  ">
                     {cartCount}
                   </span>
@@ -72,7 +81,14 @@ const Navbar = () => {
                 <li className=" px-md hover:cursor-pointer w-full  pt-lg">
                   تغییر رمزعبور
                 </li>
-                <li className="text-error px-md hover:cursor-pointer w-full pt-lg">
+                <li
+                  className="text-error px-md hover:cursor-pointer w-full pt-lg"
+                  onClick={() => {
+                    logout();
+                    setProfileOpen(false);
+                    navigate('login');
+                  }}
+                >
                   خروج
                 </li>
               </ul>
@@ -119,28 +135,25 @@ const Navbar = () => {
               className="text-md text-neutral-800 hover:text-black"
               to={'/products'}
             >
-              پیراهن
+              مردانه
             </Link>
             <Link
               className="text-md text-neutral-800 hover:text-black"
-              href="#"
+              href="product-list/زنانه"
             >
-              تیشرت
+              زنانه
             </Link>
-            <a className="text-md text-neutral-800 hover:text-black" href="#">
-              کت و شلوار
+            <a
+              className="text-md text-neutral-800 hover:text-black"
+              href="product-list/پسرانه"
+            >
+              پسرانه
             </a>
             <Link
               className="text-md text-neutral-800 hover:text-black"
               href="#"
             >
-              راک
-            </Link>
-            <Link
-              className="text-md text-neutral-800 hover:text-black"
-              href="#"
-            >
-              کاپشن
+              دخترانه
             </Link>
           </nav>
 
@@ -185,36 +198,33 @@ const Navbar = () => {
                 className="text-sm text-neutral-800 py-2 border-b border-neutral-100"
                 href="#"
               >
-                پیراهن
+                مردانه
               </Link>
               <Link
                 className="text-sm text-neutral-800 py-2 border-b border-neutral-100"
                 href="#"
               >
-                تی‌شرت
+                زنانه
               </Link>
               <Link
                 className="text-sm text-neutral-800 py-2 border-b border-neutral-100"
                 href="#"
               >
-                کت و شلوار
+                پسرانه
               </Link>
               <Link
                 className="text-sm text-neutral-800 py-2 border-b border-neutral-100"
                 to="/"
               >
-                راک
-              </Link>
-              <Link
-                className="text-sm text-neutral-800 py-2 border-b border-neutral-100"
-                to="/"
-              >
-                کاپشن
+                دخترانه
               </Link>
             </nav>
 
             <div className="mt-6">
-              <button className="w-full flex items-center justify-center gap-2 py-2 border rounded-md">
+              <button
+                onClick={navigateToCart}
+                className="w-full flex items-center justify-center gap-2 py-2 border rounded-md"
+              >
                 <ShoppingCart className="w-5 h-5" />
                 <span>سبد خرید ({cartCount})</span>
               </button>

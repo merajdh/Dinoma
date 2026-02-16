@@ -6,16 +6,18 @@ export default function Breadcrumb() {
   const matches = useMatches();
   const navigate = useNavigate();
   return (
-    <div className="bg-neutral-100  ">
+    <div className="bg-neutral-100 cursor-pointer  ">
       <ul className=" flex flex-row mx-lg align-bottom text-sm text-black-20 items-center h-15">
         {matches
           .filter(m => m.handle?.name)
           .map((m, i, e) => (
             <li
               key={m.pathname}
-              onClick={
-                i !== e.length - 1 ? () => navigate(m.pathname) : undefined
-              }
+              onClick={event => {
+                event.target.innerText !== e[e.length - 1].handle.name
+                  ? navigate(m.pathname)
+                  : undefined;
+              }}
               className={`flex items-center ${
                 i === e.length - 1 ? 'text-black text-md' : ''
               }`}

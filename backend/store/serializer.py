@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from userauths.serializer import ProfileSerializer
-from store.models import Coupon,Notification,ProductFaq,CartOrderItem,CartOrder,Cart,Color,Size,Specification,Gallery,Product,ClothingType,Audience,Review , Wishlist 
+from store.models import ProductFaq,CartOrderItem,CartOrder,Cart,Color,Size,Specification,Gallery,Product,ClothingType,Audience,Review , Wishlist 
 
 class AudienceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -180,34 +180,4 @@ class WishlistSerializer(serializers.ModelSerializer):
         else:
             self.Meta.depth = 3
 
-
-class CouponSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Coupon
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(CouponSerializer, self).__init__(*args, **kwargs)
-        request = self.context.get('request')
-        if request and request.method == 'POST':
-            self.Meta.depth = 0
-        else:
-            self.Meta.depth = 3
-
-
-
-class NotificationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Notification
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(NotificationSerializer, self).__init__(*args, **kwargs)
-        request = self.context.get('request')
-        if request and request.method == 'POST':
-            self.Meta.depth = 0
-        else:
-            self.Meta.depth = 3
 
